@@ -1,7 +1,7 @@
 name: world_nailao_flutter_utils
 description: A Utils writen by nailao, for nailao
-version: 0.0.7
-homepage:
+version: 0.0.8
+homepage: ''
 
 environment:
   sdk: '>=3.0.5 <4.0.0'
@@ -12,7 +12,6 @@ dependencies:
   cookie_jar: ^4.0.8
   dio: ^5.3.2
   dio_cookie_manager: ^3.1.0+1
-  easy_debounce: ^2.0.3
   flutter:
     sdk: flutter
   flutter_ulog: ^0.0.5

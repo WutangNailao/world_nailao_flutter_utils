@@ -26,6 +26,7 @@ class DioUtils {
   Map<String, String>? _paramMap;
   List<dynamic>? _files;
   CancelToken? _cancelToken;
+  ResponseType? _responseType;
 
   // request
   DioUtils._(String url) {
@@ -87,6 +88,11 @@ class DioUtils {
     return this;
   }
 
+  DioUtils resType(ResponseType type) {
+    _responseType = type;
+    return this;
+  }
+
   DioUtils addInterceptor(Interceptor interceptor) {
     _dioClient!.interceptors.add(interceptor);
     return this;
@@ -109,7 +115,7 @@ class DioUtils {
         options: Options(
             method: 'GET',
             headers: _headerMap,
-            responseType: ResponseType.plain,
+            responseType: _responseType ?? ResponseType.plain,
             followRedirects: true));
     clearParams();
     return ApiResponse(response);
@@ -122,7 +128,7 @@ class DioUtils {
         options: Options(
             method: 'POST',
             headers: _headerMap,
-            responseType: ResponseType.plain,
+            responseType: _responseType ?? ResponseType.plain,
             followRedirects: true));
     clearParams();
     return ApiResponse(response);
@@ -139,7 +145,7 @@ class DioUtils {
         options: Options(
             method: 'POST',
             headers: _headerMap,
-            responseType: ResponseType.plain,
+            responseType: _responseType ?? ResponseType.plain,
             contentType: "application/x-www-form-urlencoded",
             followRedirects: true));
     clearParams();
@@ -153,7 +159,7 @@ class DioUtils {
         options: Options(
             method: 'POST',
             headers: _headerMap,
-            responseType: ResponseType.plain,
+            responseType: _responseType ?? ResponseType.plain,
             contentType: "application/json",
             followRedirects: true));
     clearParams();
@@ -186,7 +192,7 @@ class DioUtils {
         options: Options(
             method: 'POST',
             headers: _headerMap,
-            responseType: ResponseType.plain,
+            responseType: _responseType ?? ResponseType.plain,
             contentType: "multipart/form-data",
             followRedirects: true));
     clearParams();
@@ -221,7 +227,7 @@ class DioUtils {
         options: Options(
             method: 'POST',
             headers: _headerMap,
-            responseType: ResponseType.plain,
+            responseType: _responseType ?? ResponseType.plain,
             contentType: "multipart/form-data",
             followRedirects: true));
     clearParams();
@@ -247,6 +253,7 @@ class DioUtils {
     _paramMap = null;
     _files = null;
     _cancelToken = null;
+    _responseType = null;
   }
 
   static void clear() {
