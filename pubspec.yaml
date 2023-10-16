@@ -1,7 +1,7 @@
 name: world_nailao_flutter_utils
 description: A Utils writen by nailao, for nailao
-version: 0.0.5
-homepage:
+version: 0.0.8
+homepage: ''
 
 environment:
   sdk: '>=3.0.5 <4.0.0'
