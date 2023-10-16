@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 
 typedef WidgetBuilder = Widget Function(
@@ -28,21 +27,21 @@ class DropdownInput extends StatefulWidget {
 
   const DropdownInput(
       {super.key,
-        this.title,
-        this.childrenPadding,
-        this.childrenMargin,
-        this.childrenBoxDecoration,
-        this.maxHeight = 100.0,
-        this.itemHeight = 50.0,
-        required this.onItemSelected,
-        this.inputWidth = 150,
-        this.hintText = "Search",
-        this.textAlign,
-        this.onChanged,
-        this.inputDecoration,
-        required this.textController,
-        required this.optionsList,
-        required this.itemWidget});
+      this.title,
+      this.childrenPadding = const EdgeInsets.all(10),
+      this.childrenMargin = const EdgeInsets.all(10),
+      this.childrenBoxDecoration,
+      this.maxHeight = 100.0,
+      this.itemHeight = 50.0,
+      required this.onItemSelected,
+      this.inputWidth = 150,
+      this.hintText = "Search",
+      this.textAlign,
+      this.onChanged,
+      this.inputDecoration,
+      required this.textController,
+      required this.optionsList,
+      required this.itemWidget});
 
   @override
   State<DropdownInput> createState() => DropdownInputState();
@@ -51,11 +50,11 @@ class DropdownInput extends StatefulWidget {
 class DropdownInputState extends State<DropdownInput>
     with SingleTickerProviderStateMixin {
   static final Animatable<double> _easeOutTween =
-  CurveTween(curve: Curves.easeOut);
+      CurveTween(curve: Curves.easeOut);
   static final Animatable<double> _easeInTween =
-  CurveTween(curve: Curves.easeIn);
+      CurveTween(curve: Curves.easeIn);
   static final Animatable<double> _halfTween =
-  Tween<double>(begin: 0.0, end: 0.5);
+      Tween<double>(begin: 0.0, end: 0.5);
 
   final ShapeBorderTween _borderTween = ShapeBorderTween();
   final ColorTween _headerColorTween = ColorTween();
@@ -77,6 +76,8 @@ class DropdownInputState extends State<DropdownInput>
   late TextEditingController _textEditingController;
 
   List<Map<String, dynamic>> get _optionsList => widget.optionsList;
+
+  final FocusNode _commentFocus = FocusNode(canRequestFocus: false);
 
   void _setOptionListWidget() {
     if (_textEditingController.text != "") {
@@ -126,10 +127,9 @@ class DropdownInputState extends State<DropdownInput>
     super.didUpdateWidget(oldWidget);
   }
 
-
   void handleExpanded(bool isExpanded) {
     debugPrint('isExpanded: $isExpanded');
-    if(_textEditingController.text == ""){
+    if (_textEditingController.text == "") {
       setState(() {
         _isExpanded = false;
         _controller.reverse().then<void>((void value) {
@@ -162,7 +162,7 @@ class DropdownInputState extends State<DropdownInput>
 
   Widget _buildChildren(BuildContext context, Widget? child) {
     final ExpansionTileThemeData expansionTileTheme =
-    ExpansionTileTheme.of(context);
+        ExpansionTileTheme.of(context);
     final ShapeBorder expansionTileBorder = _border.value ??
         const Border(
           top: BorderSide(color: Colors.transparent),
@@ -190,22 +190,29 @@ class DropdownInputState extends State<DropdownInput>
               trailing: SizedBox(
                 width: widget.inputWidth,
                 child: TextFormField(
+                  focusNode: _commentFocus,
+                  toolbarOptions: const ToolbarOptions(
+                    copy: false,
+                    paste: false,
+                    selectAll: false,
+                    cut: false,
+                  ),
+                  enableInteractiveSelection: false,
                   textAlign: widget.textAlign ?? TextAlign.start,
                   controller: _textEditingController,
                   onChanged: (text) {
+                    widget.onChanged?.call(text);
                     if (text.isEmpty) {
-                      debugPrint('onChange empty: $text');
                       handleExpanded(false);
-                      EasyDebounce.cancel('search');
-                      return;
+                      // EasyDebounce.cancel('search');
+                      // return;
                     }
-                    EasyDebounce.debounce(
-                        "search", const Duration(milliseconds: 500), () {
-                      debugPrint('onChange: $text');
-                      if (text.isNotEmpty) {
-                        widget.onChanged?.call(text);
-                      }
-                    });
+                    // EasyDebounce.debounce(
+                    //     "search", const Duration(milliseconds: 500), () {
+                    //   if (text.isNotEmpty) {
+                    // }
+                    // }
+                    // );
                   },
                   decoration: widget.inputDecoration ??
                       InputDecoration(
@@ -219,7 +226,7 @@ class DropdownInputState extends State<DropdownInput>
           ClipRect(
             child: Align(
               alignment:
-              expansionTileTheme.expandedAlignment ?? Alignment.center,
+                  expansionTileTheme.expandedAlignment ?? Alignment.center,
               heightFactor: _heightFactor.value,
               child: child,
             ),
@@ -233,7 +240,7 @@ class DropdownInputState extends State<DropdownInput>
   void didChangeDependencies() {
     final ThemeData theme = Theme.of(context);
     final ExpansionTileThemeData expansionTileTheme =
-    ExpansionTileTheme.of(context);
+        ExpansionTileTheme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     _borderTween
       ..begin = const Border(
@@ -269,7 +276,7 @@ class DropdownInputState extends State<DropdownInput>
   @override
   Widget build(BuildContext context) {
     final ExpansionTileThemeData expansionTileTheme =
-    ExpansionTileTheme.of(context);
+        ExpansionTileTheme.of(context);
     final bool closed = !_isExpanded && _controller.isDismissed;
     final bool shouldRemoveChildren = closed;
 
@@ -285,31 +292,32 @@ class DropdownInputState extends State<DropdownInput>
               EdgeInsets.zero,
           child: SizedBox(
             height:
-            min(widget.itemHeight * _optionsList.length, widget.maxHeight),
+                min(widget.itemHeight * _optionsList.length, widget.maxHeight),
             child: _optionsList.isNotEmpty
                 ? RawScrollbar(
-              radius: const Radius.circular(5.0),
-              thickness: 4.0,
-              child: ListView.builder(
-                itemCount: _optionsList.length,
-                itemBuilder: (context, index) {
-                  Map<String, dynamic> item = _optionsList[index];
+                    radius: const Radius.circular(5.0),
+                    thickness: 4.0,
+                    child: ListView.builder(
+                      itemCount: _optionsList.length,
+                      itemBuilder: (context, index) {
+                        Map<String, dynamic> item = _optionsList[index];
 
-                  returnedWidgetBuilder(Map<String, dynamic> item) {
-                    return GestureDetector(
-                      child: widget.itemWidget(context, item),
-                      onTap: () {
-                        widget.onItemSelected.call(item);
-                        handleExpanded(false);
-                        _optionsList.clear();
+                        returnedWidgetBuilder(Map<String, dynamic> item) {
+                          return GestureDetector(
+                            child: widget.itemWidget(context, item),
+                            onTap: () {
+                              widget.onItemSelected.call(item);
+                              handleExpanded(false);
+                              _commentFocus.unfocus();
+                              _optionsList.clear();
+                            },
+                          );
+                        }
+
+                        return returnedWidgetBuilder(item);
                       },
-                    );
-                  }
-
-                  return returnedWidgetBuilder(item);
-                },
-              ),
-            )
+                    ),
+                  )
                 : const Text('无数据'),
           ),
         ),
@@ -323,4 +331,3 @@ class DropdownInputState extends State<DropdownInput>
     );
   }
 }
-
