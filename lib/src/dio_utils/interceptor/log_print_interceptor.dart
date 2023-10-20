@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_ulog/flutter_ulog.dart';
 
-import '../config/log_config.dart';
-import '../config/network_config.dart';
 
 typedef LibLogPrint = void Function(String message);
 
@@ -11,9 +9,9 @@ class LibLogInterceptor extends Interceptor {
   LibLogInterceptor(
       {this.request = true,
       this.requestHeader = true,
-      this.requestBody = LogConfig.Ulog_showRequest,
+      this.requestBody = true,
       this.responseHeader = true,
-      this.responseBody = LogConfig.Ulog_showResponse,
+      this.responseBody = true,
       this.error = true});
 
   /// Print request [Options]
@@ -66,7 +64,7 @@ class LibLogInterceptor extends Interceptor {
       //   ULog.d(res,tag: "${SysConfig.libNetTag}RequestJson");
       // }
     }
-    ULog.d(builder.toString(), tag: "${NetWorkConfig.libNetTag}Request");
+    ULog.d(builder.toString());
     handler.next(options);
   }
 
@@ -88,7 +86,7 @@ class LibLogInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) async {
     var builder = StringBuffer('*** Response *** \n');
     _printResponse(response, builder, (message) {
-      ULog.d(message, tag: "${NetWorkConfig.libNetTag}Response");
+      ULog.d(message);
     });
     handler.next(response);
   }
@@ -101,10 +99,10 @@ class LibLogInterceptor extends Interceptor {
       builder.write('$err');
       if (err.response != null) {
         _printResponse(err.response!, builder, (message) {
-          ULog.e(message, tag: "${NetWorkConfig.libNetTag}Error");
+          ULog.e(message);
         });
       } else {
-        ULog.e(builder.toString(), tag: "${NetWorkConfig.libNetTag}Error");
+        ULog.e(builder.toString());
       }
     }
 

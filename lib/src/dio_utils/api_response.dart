@@ -1,84 +1,53 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:world_nailao_flutter_utils/src/is_empty/is_empty.dart';
+import 'package:world_nailao_flutter_utils/src/dio_utils/exception/json_format_exception.dart';
+import 'package:world_nailao_flutter_utils/src/dio_utils/exception/parse_exception.dart';
 
 class ApiResponse {
   late final Response _rawResponse;
-  late final int _code;
-  late final String _msg;
-  late final Map<String, dynamic> _data;
 
-  ApiResponse(Response rawResponse) {
-    _rawResponse = rawResponse;
-    // print(rawResponse.data.toString());
+  Map<String, dynamic>? responseData;
+  int? _code;
+  String? _msg;
+  dynamic _data;
+
+  ApiResponse(this._rawResponse);
+
+  ApiResponse parse({List<String> jsonFormat = const ["code", "data", "msg"]}) {
+    late final Map<String, dynamic> jsonDate;
     try {
-      Map<String, dynamic> jsonDate = jsonDecode(rawResponse.data);
-      if (jsonDate['code'] != null) {
-        // print(jsonDate['data']);
-
-        /// 对于较大的数据返回量，使用compute来解析json
-
-        _code = jsonDate['code'];
-        _msg = jsonDate['msg'];
-        //如果data是字符串就返回{"data":" "},
-        //否则直接返回
-        var data = jsonDate['data'];
-        // if (kDebugMode) {
-        //   print(Utils.isEmpty(data));
-        //   print(data.runtimeType);
-        //   print(data is Map);
-        //   print(data);
-        // }
-        if (isEmpty(data)) {
-          _data = <String, dynamic>{};
-        } else if (data is Map<String, dynamic>) {
-          _data = data;
-        } else {
-          _data = <String, dynamic>{"data": data};
-        }
-      }
-      // print(jsonDate);
-    } catch (parseError) {
-      if (kDebugMode) {
-        print("parseError: $parseError");
-      }
-      // throw ParseException("ParseError", code);
+      jsonDate = jsonDecode(_rawResponse.data);
+      responseData = jsonDate;
+    } catch (e) {
+      throw ParseException(
+          "the response type is ${_rawResponse.data.runtimeType}, not is json, so it can not be parsed");
     }
+    for (String e in jsonFormat) {
+      if (!jsonDate.containsKey(e)) {
+        throw JsonFormatException(
+            "json format may be not as expected, response json format is ${jsonDate.keys}, but your input format is ${jsonFormat.join(',')}");
+      }
+    }
+
+    _code = jsonDate[jsonFormat[0]];
+
+    _msg = jsonDate[jsonFormat[2]];
+
+    /// 对于较大的数据返回量，使用compute来解析json
+
+    //如果data是字符串就返回" ",
+    //如果data是数组 则返回 [];
+    //如果data是map 则返回 {};
+    _data = jsonDate[jsonFormat[1]];
+
+    return this;
   }
 
-  // ApiResponse.fromJson(Map<String, dynamic> json) {
-  //
-  //   print(1);
-  //   print(json['data']=='');
-  //   print(2);
-  //   _code = json['code'];
-  //   _msg = json['msg'];
-  //   _data = json['data'] == ''|| json['data'].isNull ? <String, dynamic>{} : json['data'];
-  // }
-
-  // Future<Map<String, dynamic>> _parseJson(String text) {
-  //   return compute(_parseAndDecode, text);
-  // }
-  //
-  // Map<String, dynamic> _parseAndDecode(String response) {
-  //   return jsonDecode(response) as Map<String, dynamic>;
-  // }
-
-  @override
-  String toString() {
-    return "{'code'：$_code,'msg': $_msg,'data': $_data,}";
-  }
 
   String asString() {
     //未过apiResponse处理的toString
     return _rawResponse.data.toString();
-  }
-
-  Map<String, dynamic> toMap() {
-    // print(_data);
-    return _data;
   }
 
   // assertSuccess() {
@@ -89,9 +58,27 @@ class ApiResponse {
 
   Response get rawResponse => _rawResponse;
 
-  int get code => _code;
+  int getCode() {
+    if (_code == null) {
+      throw "you need call parse function before get response code";
+    }
+    return _code!;
+  }
 
-  String get msg => _msg;
+  String getMsg() {
+    if (_msg == null) {
+      throw "you need call parse function before get response msg";
+    }
+    return _msg!;
+  }
 
-  Map<String, dynamic> get data => _data;
+  T getData<T>() {
+    if (_data == null) {
+      throw "you need call parse function before get response data";
+    }
+    if(_data.runtimeType.toString().replaceAll("_", "") != T.toString()){
+      throw "the data type is ${_data.runtimeType}, but you think this is ${T.toString()}";
+    }
+    return _data!;
+  }
 }

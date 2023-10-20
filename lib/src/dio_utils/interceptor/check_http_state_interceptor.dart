@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 class CheckHttpStateInterceptor extends Interceptor {
-  CheckHttpStateInterceptor();
-
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     List<int> errStatusCodes = [

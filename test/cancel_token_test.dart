@@ -48,7 +48,7 @@ get() async {
   cancelToken = CancelToken();
   (await DioClient.request("https://github.com")
           .addCancelToken(cancelToken!)
-          .removeApiStateInterceptor()
+          // .removeApiStateInterceptor()
           .get())
       .asString();
 }

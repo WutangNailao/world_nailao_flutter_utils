@@ -1,13 +1,19 @@
-
 import 'package:world_nailao_flutter_utils/world_nailao_flutter_utils.dart';
 
-import 'error_code_impl.dart';
+
 
 void main() async {
-  DioClient.init(newErrorCode: DioErrorCodeImpl());
-  String res = (await DioClient.request(
-              "http://localhost:3001/phoneVCode/getPhoneVCode.do")
-          .post())
+  DioClient.init();
+  // Map res = (await DioClient.request(
+  //             "https://api.campus.zhiwya.com/school/getSchoolPageInfo")
+  //         .add("univUID", "mZ4NhGB2yLOHJjlA7DUb9g==")
+  //         .postForm())
+  //     .parse()
+  //     .getData<Map<String, dynamic>>();
+  // print(res);
+  String res = (await DioClient.request("https://www.baidu.com")
+          // .add("univUID", "mZ4NhGB2yLOHJjlA7DUb9g==")
+          .get())
       .asString();
   print(res);
 }

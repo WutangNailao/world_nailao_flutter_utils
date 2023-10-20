@@ -1,17 +1,13 @@
 import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
-import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:world_nailao_flutter_utils/src/dio_utils/dio_client.dart';
 
 import 'api_response.dart';
 import 'global_http_overrides.dart';
-import 'interceptor/check_http_state_interceptor.dart';
-import 'interceptor/check_response_state_interceptor.dart';
-import 'interceptor/log_print_interceptor.dart';
 
 enum NetWorkState {
   mobile,
@@ -20,7 +16,7 @@ enum NetWorkState {
 }
 
 class DioUtils {
-  static Dio? _dioClient;
+  static Dio? _dio;
   late String _url;
   Map<String, String>? _headerMap;
   Map<String, String>? _paramMap;
@@ -31,21 +27,21 @@ class DioUtils {
   // request
   DioUtils._(String url) {
     _url = url;
-    if (_dioClient == null) {
-      HttpOverrides.global = GlobalHttpOverrides();
-      BaseOptions options = BaseOptions(
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        sendTimeout: const Duration(seconds: 10),
-        followRedirects: true,
-      );
-      _dioClient = Dio(options);
-      _dioClient!.httpClientAdapter = _ioHttpClientAdapter;
-      _dioClient!.interceptors.add(CookieManager(CookieJar()));
-      _dioClient!.interceptors.add(CheckHttpStateInterceptor());
-      _dioClient!.interceptors.add(CheckResponseStateInterceptor());
-      _dioClient!.interceptors.add(LibLogInterceptor());
-    }
+    _dio ??= dioInit();
+  }
+
+  Dio dioInit() {
+    HttpOverrides.global = GlobalHttpOverrides();
+    BaseOptions options = BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
+      followRedirects: true,
+    );
+    final dio = Dio(options);
+    dio.httpClientAdapter = _ioHttpClientAdapter;
+    dio.interceptors.addAll(DioClient.getInterceptors());
+    return dio;
   }
 
   static DioUtils builder(String url) {
@@ -94,23 +90,23 @@ class DioUtils {
   }
 
   DioUtils addInterceptor(Interceptor interceptor) {
-    _dioClient!.interceptors.add(interceptor);
+    _dio!.interceptors.add(interceptor);
     return this;
   }
 
   DioUtils removeInterceptor(Interceptor interceptor) {
-    _dioClient!.interceptors.remove(interceptor);
+    _dio!.interceptors.remove(interceptor);
     return this;
   }
 
-  DioUtils removeApiStateInterceptor() {
-    _dioClient!.interceptors
-        .removeWhere((element) => element is CheckResponseStateInterceptor);
-    return this;
-  }
+  // DioUtils removeApiStateInterceptor() {
+  //   _dio!.interceptors
+  //       .removeWhere((element) => element is CheckResponseStateInterceptor);
+  //   return this;
+  // }
 
   Future<ApiResponse> get() async {
-    Response response = await _dioClient!.request(_url,
+    Response response = await _dio!.request(_url,
         cancelToken: _cancelToken,
         options: Options(
             method: 'GET',
@@ -122,7 +118,7 @@ class DioUtils {
   }
 
   Future<ApiResponse> post() async {
-    final Response response = await _dioClient!.request(_url,
+    final Response response = await _dio!.request(_url,
         data: _paramMap,
         cancelToken: _cancelToken,
         options: Options(
@@ -139,7 +135,7 @@ class DioUtils {
     if (_paramMap != null && _paramMap!.isNotEmpty) {
       data = FormData.fromMap(_paramMap!);
     }
-    final Response response = await _dioClient!.request(_url,
+    final Response response = await _dio!.request(_url,
         data: data,
         cancelToken: _cancelToken,
         options: Options(
@@ -153,7 +149,7 @@ class DioUtils {
   }
 
   Future<ApiResponse> postJson() async {
-    final Response response = await _dioClient!.request(_url,
+    final Response response = await _dio!.request(_url,
         data: _paramMap,
         cancelToken: _cancelToken,
         options: Options(
@@ -184,7 +180,7 @@ class DioUtils {
 
     voiceData.files.addAll(multipartFiles);
 
-    final Response response = await _dioClient!.request(_url,
+    final Response response = await _dio!.request(_url,
         data: voiceData,
         cancelToken: _cancelToken, onSendProgress: (int sent, int total) {
       // print("$sent $total");
@@ -217,7 +213,7 @@ class DioUtils {
     list.add("${_paramMap!["md5"]}");
     FormData data = FormData.fromMap(_paramMap!);
     data.files.addAll(multipartFiles);
-    final Response response = await _dioClient!.request(_url,
+    final Response response = await _dio!.request(_url,
         data: data,
         cancelToken: _cancelToken, onSendProgress: (int sent, int total) {
       if (kDebugMode) {
@@ -257,6 +253,6 @@ class DioUtils {
   }
 
   static void clear() {
-    _dioClient = null;
+    _dio = null;
   }
 }
