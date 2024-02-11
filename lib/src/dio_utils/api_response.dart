@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:world_nailao_flutter_utils/src/dio_utils/api_response_format.dart';
 import 'package:world_nailao_flutter_utils/src/dio_utils/exception/json_format_exception.dart';
 import 'package:world_nailao_flutter_utils/src/dio_utils/exception/parse_exception.dart';
 
@@ -14,36 +15,42 @@ class ApiResponse {
 
   ApiResponse(this._rawResponse);
 
-  ApiResponse parse({List<String> jsonFormat = const ["code", "data", "msg"]}) {
-    late final Map<String, dynamic> jsonDate;
+  ApiResponse parse(
+      {ApiResponseFormat jsonFormat =
+          const ApiResponseFormat(code: "code", msg: "msg", data: "data")}) {
+    late final Map<String, dynamic> jsonData;
     try {
-      jsonDate = jsonDecode(_rawResponse.data);
-      responseData = jsonDate;
+      jsonData = jsonDecode(_rawResponse.data);
+      responseData = jsonData;
     } catch (e) {
       throw ParseException(
           "the response type is ${_rawResponse.data.runtimeType}, not is json, so it can not be parsed");
     }
-    for (String e in jsonFormat) {
-      if (!jsonDate.containsKey(e)) {
-        throw JsonFormatException(
-            "json format may be not as expected, response json format is ${jsonDate.keys}, but your input format is ${jsonFormat.join(',')}");
-      }
+
+    if (!jsonData.containsKey(jsonFormat.getCode())) {
+      throw JsonFormatException(
+          "json format may be not as expected, response json format is ${jsonData.keys}, but your input format is ${jsonFormat.toString()}");
+    }
+    if (!jsonData.containsKey(jsonFormat.getMsg())) {
+      throw JsonFormatException(
+          "json format may be not as expected, response json format is ${jsonData.keys}, but your input format is ${jsonFormat.toString()}");
     }
 
-    _code = jsonDate[jsonFormat[0]];
+    _code = jsonData[jsonFormat.getCode()];
 
-    _msg = jsonDate[jsonFormat[2]];
+    _msg = jsonData[jsonFormat.getMsg()];
 
     /// 对于较大的数据返回量，使用compute来解析json
 
     //如果data是字符串就返回" ",
     //如果data是数组 则返回 [];
     //如果data是map 则返回 {};
-    _data = jsonDate[jsonFormat[1]];
+    if (jsonData.containsKey(jsonFormat.getData())) {
+      _data = jsonData[jsonFormat.getData()];
+    }
 
     return this;
   }
-
 
   String asString() {
     //未过apiResponse处理的toString
@@ -72,13 +79,20 @@ class ApiResponse {
     return _msg!;
   }
 
-  T getData<T>() {
-    if (_data == null) {
-      throw "you need call parse function before get response data";
-    }
-    if(_data.runtimeType.toString().replaceAll("_", "") != T.toString()){
-      throw "the data type is ${_data.runtimeType}, but you think this is ${T.toString()}";
-    }
-    return _data!;
+  T? getData<T>() {
+    // if (_data == null) {
+    //   throw "Maybe this response json don't contains data, or You need call parse function before get response data";
+    // }
+    // if(_data.runtimeType.toString().replaceAll("_", "") == "Null"){
+    //   return null;
+    // }
+    //
+    // if (_data.runtimeType.toString().replaceAll("_", "") != T.toString()) {
+    //   throw "the data type is ${_data.runtimeType}, but you think this is ${T.toString()}";
+    // }
+
+    // if(_data.runtimeType==T.toString())
+
+    return _data;
   }
 }

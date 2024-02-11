@@ -1,7 +1,5 @@
 import 'package:world_nailao_flutter_utils/world_nailao_flutter_utils.dart';
 
-
-
 void main() async {
   DioClient.init();
   // Map res = (await DioClient.request(
@@ -11,9 +9,16 @@ void main() async {
   //     .parse()
   //     .getData<Map<String, dynamic>>();
   // print(res);
-  String res = (await DioClient.request("https://www.baidu.com")
-          // .add("univUID", "mZ4NhGB2yLOHJjlA7DUb9g==")
-          .get())
-      .asString();
-  print(res);
+  // String res = (await DioClient.request("https://www.baidu.com")
+  //         // .add("univUID", "mZ4NhGB2yLOHJjlA7DUb9g==")
+  //         .get())
+  //     .asString();
+  // print(res);
+  String html =
+      (await DioClient.request("https://api.campus.zhiwya.com/user/getUserInfo")
+              .add("userId", "35")
+              .postForm())
+          .parse()
+          .asString();
+  print(html);
 }

@@ -19,3 +19,17 @@
 
 ## 0.0.7
 * 修复0.0.6的傻逼bug
+
+## 0.1.1
+* 增加get请求的queryParam
+
+## 0.1.2
+* export ApiException
+
+## 0.1.3
+* 包括data等于null的情况
+
+## 0.1.4
+
+## 0.1.5
+* add addAll method to addAll params

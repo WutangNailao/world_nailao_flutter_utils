@@ -67,6 +67,12 @@ class DioUtils {
     return this;
   }
 
+  DioUtils addAll(Map<String, String> params) {
+    _paramMap ??= <String, String>{};
+    _paramMap!.addAll(params);
+    return this;
+  }
+
   DioUtils addCancelToken(CancelToken cancelToken) {
     _cancelToken = cancelToken;
     return this;
@@ -108,6 +114,7 @@ class DioUtils {
   Future<ApiResponse> get() async {
     Response response = await _dio!.request(_url,
         cancelToken: _cancelToken,
+        data: _paramMap,
         options: Options(
             method: 'GET',
             headers: _headerMap,

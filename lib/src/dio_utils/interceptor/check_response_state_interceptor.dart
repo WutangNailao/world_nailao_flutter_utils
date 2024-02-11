@@ -1,26 +1,30 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:world_nailao_flutter_utils/src/dio_utils/api_response_format.dart';
 import 'package:world_nailao_flutter_utils/src/dio_utils/exception/api_exception.dart';
 
 class CheckResponseStateInterceptor extends Interceptor {
-  final List<String> jsonFormat;
+  final ApiResponseFormat jsonFormat;
 
   CheckResponseStateInterceptor(
-      {this.jsonFormat = const ["code", "data", "msg"]});
+      {this.jsonFormat =
+          const ApiResponseFormat(code: "code", msg: "msg", data: "data")});
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
+    try {
+      Map resMap = jsonDecode(response.data.toString());
 
-    if (response.data.runtimeType is! Map<String, dynamic>) {
+      if (resMap[jsonFormat.getCode()] != 0 &&
+          resMap[jsonFormat.getCode()] != "0") {
+        throw ApiException(
+            resMap[jsonFormat.getCode()], resMap[jsonFormat.getMsg()]);
+      }
+    } on ApiException catch (e) {
+      rethrow;
+    } catch (e) {
       super.onResponse(response, handler);
-      return ;
     }
-    Map resMap = jsonDecode(response.data.toString());
-
-    if (resMap[jsonFormat[0]] != 0 && resMap[jsonFormat[0]] != "0") {
-      throw ApiException(resMap[jsonFormat[0]], resMap[jsonFormat[2]]);
-    }
-    super.onResponse(response, handler);
   }
 }

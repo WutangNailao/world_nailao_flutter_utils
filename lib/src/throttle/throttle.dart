@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:world_nailao_flutter_utils/src/throttle/throttle_exception.dart';
 
 class Throttle {
   static final Map<String, bool> _funcThrottle = {};
@@ -29,8 +29,8 @@ class Throttle {
       });
       await _target.call();
     } else {
-      // throw ThrottleException("请勿频繁调用此函数: $_target");
-      Fluttertoast.showToast(msg: "请勿频繁调用此函数: $_target");
+      throw ThrottleException("请勿频繁调用此函数: $_target");
+      // Fluttertoast.showToast(msg: "请勿频繁调用此函数: $_target");
       if (kDebugMode) {
         print("请勿频繁调用此函数: $_target");
       }

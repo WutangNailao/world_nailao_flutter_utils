@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter_ulog/flutter_ulog.dart';
 
-import 'dio_utils.dart';
+import '../../world_nailao_flutter_utils.dart';
 import 'interceptor/check_http_state_interceptor.dart';
 import 'ulog_console_adaptar.dart';
 
@@ -11,8 +11,7 @@ class DioClient {
   static bool? enableLog;
   static final List<Interceptor> _interceptors = [
     CookieManager(CookieJar()),
-    CheckHttpStateInterceptor(),
-    // CheckResponseStateInterceptor()
+    CheckHttpStateInterceptor()
   ];
 
   static DioUtils request(String url) {
